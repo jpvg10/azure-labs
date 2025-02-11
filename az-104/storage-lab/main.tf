@@ -35,12 +35,30 @@ resource "azurerm_storage_account" "lab_account" {
   allow_nested_items_to_be_public = false
 }
 
+output "lab_account_id" {
+  value = azurerm_storage_account.lab_account.id
+}
+
 resource "azurerm_storage_container" "uploaded_files" {
   name                  = "uploaded-files"
   storage_account_id    = azurerm_storage_account.lab_account.id
   container_access_type = "private"
 }
 
-output "lab_account_id" {
-  value = azurerm_storage_account.lab_account.id
+resource "azurerm_storage_management_policy" "storage_policy" {
+  storage_account_id = azurerm_storage_account.lab_account.id
+
+  rule {
+    name    = "Delete blobs after 7 days"
+    enabled = true
+    filters {
+      prefix_match = [azurerm_storage_container.uploaded_files.name]
+      blob_types   = ["blockBlob"]
+    }
+    actions {
+      base_blob {
+        delete_after_days_since_modification_greater_than = 7
+      }
+    }
+  }
 }
