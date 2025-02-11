@@ -1,8 +1,11 @@
 import argparse, os
 from azure.identity import DefaultAzureCredential
 from azure.storage.blob import BlobServiceClient
+from dotenv import load_dotenv
 
 try:
+  load_dotenv()
+
   parser = argparse.ArgumentParser()
   parser.add_argument("file_path", help="Relative or absolute path to the file you want to upload", type=str)
   args = parser.parse_args()
@@ -10,7 +13,9 @@ try:
   file_path = args.file_path
   file_name = os.path.basename(file_path)
 
-  account_url = "https://labaccountjpvg.blob.core.windows.net"
+  account_name = os.getenv("STORAGE_ACCOUNT_NAME")
+  account_url = f"https://{account_name}.blob.core.windows.net"
+
   default_credential = DefaultAzureCredential()
   blob_service_client = BlobServiceClient(account_url, credential=default_credential)
 

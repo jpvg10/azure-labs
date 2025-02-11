@@ -11,6 +11,10 @@ variable "subscription_id" {
   type = string
 }
 
+variable "storage_account_name" {
+  type = string
+}
+
 provider "azurerm" {
   features {}
   subscription_id = var.subscription_id
@@ -22,7 +26,7 @@ resource "azurerm_resource_group" "storage" {
 }
 
 resource "azurerm_storage_account" "lab_account" {
-  name                            = "labaccountjpvg"
+  name                            = var.storage_account_name
   resource_group_name             = azurerm_resource_group.storage.name
   location                        = azurerm_resource_group.storage.location
   account_tier                    = "Standard"
