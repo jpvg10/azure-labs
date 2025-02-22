@@ -4,6 +4,11 @@ terraform {
       source  = "hashicorp/azurerm"
       version = "=4.17.0"
     }
+
+    azuread = {
+      source  = "hashicorp/azuread"
+      version = "~> 3.1.0"
+    }
   }
 }
 
@@ -16,6 +21,14 @@ variable "storage_account_name" {
 }
 
 variable "web_app_name" {
+  type = string
+}
+
+variable "github_username" {
+  type = string
+}
+
+variable "github_repo" {
   type = string
 }
 
@@ -85,8 +98,42 @@ resource "azurerm_linux_web_app" "lab_webapp" {
   location                                       = azurerm_service_plan.lab_plan.location
   service_plan_id                                = azurerm_service_plan.lab_plan.id
   webdeploy_publish_basic_authentication_enabled = false
+  ftp_publish_basic_authentication_enabled       = false
 
   site_config {
     always_on = false
   }
+}
+
+# OpenID Connect credential for GitHub Actions deployment
+
+resource "azuread_application" "lab_entra_app" {
+  display_name = "Storage Webapp"
+}
+
+output "AZURE_CLIENT_ID" {
+  value = azuread_application.lab_entra_app.client_id
+}
+
+resource "azuread_service_principal" "lab_service_principal" {
+  client_id = azuread_application.lab_entra_app.client_id
+}
+
+output "AZURE_TENANT_ID" {
+  value = azuread_service_principal.lab_service_principal.application_tenant_id
+}
+
+resource "azurerm_role_assignment" "lab_role_assignment" {
+  scope                = azurerm_linux_web_app.lab_webapp.id
+  role_definition_name = "Contributor"
+  principal_id         = azuread_service_principal.lab_service_principal.object_id
+  principal_type       = "ServicePrincipal"
+}
+
+resource "azuread_application_federated_identity_credential" "lab_federated_credential" {
+  application_id = azuread_application.lab_entra_app.id
+  display_name   = "storage-webapp-deploy"
+  audiences      = ["api://AzureADTokenExchange"]
+  issuer         = "https://token.actions.githubusercontent.com"
+  subject        = "repo:${var.github_username}/${var.github_repo}:ref:refs/heads/main"
 }
