@@ -102,6 +102,10 @@ resource "azurerm_linux_web_app" "lab_webapp" {
 
   site_config {
     always_on = false
+
+    application_stack {
+      node_version = "20-lts"
+    }
   }
 }
 
