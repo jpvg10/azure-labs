@@ -4,6 +4,10 @@ terraform {
       source  = "hashicorp/azurerm"
       version = "=4.17.0"
     }
+    azuread = {
+      source  = "hashicorp/azuread"
+      version = "~> 3.1.0"
+    }
   }
 }
 
@@ -12,6 +16,10 @@ variable "subscription_id" {
 }
 
 variable "storage_account_name" {
+  type = string
+}
+
+variable "user_principal_name" {
   type = string
 }
 
@@ -33,10 +41,6 @@ resource "azurerm_storage_account" "lab_account" {
   account_replication_type        = "LRS"
   access_tier                     = "Hot"
   allow_nested_items_to_be_public = false
-}
-
-output "lab_account_id" {
-  value = azurerm_storage_account.lab_account.id
 }
 
 resource "azurerm_storage_container" "uploaded_files" {
@@ -61,4 +65,14 @@ resource "azurerm_storage_management_policy" "storage_policy" {
       }
     }
   }
+}
+
+data "azuread_user" "lab_user_account" {
+  user_principal_name = var.user_principal_name
+}
+
+resource "azurerm_role_assignment" "example" {
+  scope                = azurerm_storage_account.lab_account.id
+  role_definition_name = "Storage Blob Data Contributor"
+  principal_id         = data.azuread_user.lab_user_account.object_id
 }
