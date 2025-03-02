@@ -4,7 +4,6 @@ terraform {
       source  = "hashicorp/azurerm"
       version = "=4.17.0"
     }
-
     azuread = {
       source  = "hashicorp/azuread"
       version = "~> 3.1.0"
@@ -54,10 +53,6 @@ resource "azurerm_storage_account" "lab_account" {
   allow_nested_items_to_be_public = false
 }
 
-output "lab_account_id" {
-  value = azurerm_storage_account.lab_account.id
-}
-
 resource "azurerm_storage_container" "uploaded_files" {
   name                  = "uploaded-files"
   storage_account_id    = azurerm_storage_account.lab_account.id
@@ -101,11 +96,30 @@ resource "azurerm_linux_web_app" "lab_webapp" {
   ftp_publish_basic_authentication_enabled       = false
 
   site_config {
-    always_on = false
+    always_on = false # Required for F1 app service plan
 
     application_stack {
       node_version = "20-lts"
     }
+  }
+
+  logs {
+    http_logs {
+      file_system {
+        retention_in_days = 2
+        retention_in_mb   = 35
+      }
+    }
+  }
+
+  # Environment variables
+  app_settings = {
+    AZURE_STORAGE_ACCOUNT_NAME = var.storage_account_name
+  }
+
+  # Managed identity (for the web app to access the storage account)
+  identity {
+    type = "SystemAssigned"
   }
 }
 
@@ -140,4 +154,12 @@ resource "azuread_application_federated_identity_credential" "lab_federated_cred
   audiences      = ["api://AzureADTokenExchange"]
   issuer         = "https://token.actions.githubusercontent.com"
   subject        = "repo:${var.github_username}/${var.github_repo}:ref:refs/heads/main"
+}
+
+# Managed identity role assignment
+
+resource "azurerm_role_assignment" "webapp_role_assignment" {
+  scope                = azurerm_storage_account.lab_account.id
+  role_definition_name = "Storage Blob Data Contributor"
+  principal_id         = azurerm_linux_web_app.lab_webapp.identity[0].principal_id
 }

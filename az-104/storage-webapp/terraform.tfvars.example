@@ -1,5 +1,5 @@
 subscription_id = "00000000-0000-0000-0000-000000000000"
 storage_account_name = "<globally unique name>"
 web_app_name = "<globally unique name>"
-github_username = "jpvg10"
-github_repo = "azure-webapp-storage"
+github_username = "<your username>"
+github_repo = "<your repo>"
