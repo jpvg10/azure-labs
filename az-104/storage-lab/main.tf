@@ -71,7 +71,7 @@ data "azuread_user" "lab_user_account" {
   user_principal_name = var.user_principal_name
 }
 
-resource "azurerm_role_assignment" "example" {
+resource "azurerm_role_assignment" "lab_role" {
   scope                = azurerm_storage_account.lab_account.id
   role_definition_name = "Storage Blob Data Contributor"
   principal_id         = data.azuread_user.lab_user_account.object_id
