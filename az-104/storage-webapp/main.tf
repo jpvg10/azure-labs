@@ -36,6 +36,10 @@ provider "azurerm" {
   subscription_id = var.subscription_id
 }
 
+output "AZURE_SUBSCRIPTION_ID" {
+  value = var.subscription_id
+}
+
 resource "azurerm_resource_group" "storage" {
   name     = "storage"
   location = "Sweden Central"
@@ -121,6 +125,10 @@ resource "azurerm_linux_web_app" "lab_webapp" {
   identity {
     type = "SystemAssigned"
   }
+}
+
+output "webapp_url" {
+  value = "https://${azurerm_linux_web_app.lab_webapp.name}.azurewebsites.net"
 }
 
 # OpenID Connect credential for GitHub Actions deployment
