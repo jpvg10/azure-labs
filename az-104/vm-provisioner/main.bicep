@@ -1,6 +1,9 @@
 @secure()
 param adminSshPublicKey string
 
+param vmCount int
+param vmNamePrefix string
+
 targetScope = 'subscription'
 
 resource rg 'Microsoft.Resources/resourceGroups@2024-07-01' = {
@@ -13,14 +16,16 @@ module network './network.bicep' = {
   scope: rg
 }
 
-module vm './vm.bicep' = {
-  name: 'vmDeployment'
+module vm './vm.bicep' = [for i in range(0, vmCount): {
+  name: 'vmDeployment-${i}'
   dependsOn: [network]
   scope: rg
   params: {
-    vmName: 'myVM'
+    vmName: '${vmNamePrefix}-${i}'
     adminSshPublicKey: adminSshPublicKey
   }
-}
+}]
 
-output publicIP string = vm.outputs.publicIP
+output publicIP array = [for i in range(0, vmCount): {
+  publicIP: vm[i].outputs.publicIP
+}]
