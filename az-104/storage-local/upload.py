@@ -23,8 +23,8 @@ try:
   blob_client = blob_service_client.get_blob_client(container=container_name, blob=file_name)
 
   with open(file=file_path, mode="rb") as data:
-      blob_client.upload_blob(data)
-      print("Uploaded blob:", file_name)
+    blob_client.upload_blob(data)
+    print("Uploaded blob:", file_name)
 
 except Exception as ex:
   print("Error:", ex)
