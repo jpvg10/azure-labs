@@ -34,7 +34,7 @@ resource "azurerm_network_interface" "nic" {
   }
 }
 
-resource "azurerm_network_interface_security_group_association" "nic-nsg" {
+resource "azurerm_network_interface_security_group_association" "nic_nsg" {
   network_interface_id      = azurerm_network_interface.nic.id
   network_security_group_id = var.nsg_id
 }
