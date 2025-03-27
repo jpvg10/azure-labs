@@ -1,0 +1,3 @@
+subscription_id = "00000000-0000-0000-0000-000000000000"
+default_password = "<some value>"
+vpn_gateway_shared_key = "<very secret value>"
