@@ -21,6 +21,10 @@ variable "vpn_gateway_shared_key" {
   sensitive = true
 }
 
+variable "storage_account_name" {
+  type = string
+}
+
 provider "azurerm" {
   features {}
   subscription_id = var.subscription_id
@@ -117,10 +121,6 @@ module "dev_laptop" {
   nsg_id           = azurerm_network_security_group.vm_ssh_nsg.id
 }
 
-output "dev_laptop_id" {
-  value = module.dev_laptop.vm_id
-}
-
 module "cloud_server" {
   source           = "./vm"
   vm_name          = "cloud-server"
@@ -128,6 +128,29 @@ module "cloud_server" {
   subnet_id        = azurerm_subnet.azure_subnet_vms.id
   default_password = var.vm_default_password
   nsg_id           = azurerm_network_security_group.vm_ssh_nsg.id
+}
+
+output "cloud_server_ip" {
+  value = module.cloud_server.vm_ip
+}
+
+# Storage account
+
+resource "azurerm_storage_account" "storage" {
+  name                            = var.storage_account_name
+  resource_group_name             = azurerm_resource_group.networks.name
+  location                        = azurerm_resource_group.networks.location
+  account_tier                    = "Standard"
+  account_replication_type        = "LRS"
+  access_tier                     = "Hot"
+  allow_nested_items_to_be_public = true
+  public_network_access_enabled   = false
+}
+
+resource "azurerm_storage_container" "public_container" {
+  name                  = "public-files"
+  storage_account_id    = azurerm_storage_account.storage.id
+  container_access_type = "container" # Anonymous user can read all blobs in the container
 }
 
 # VPN
