@@ -179,11 +179,18 @@ resource "azurerm_private_dns_zone" "dns_zone" {
   resource_group_name = azurerm_resource_group.networks.name
 }
 
-resource "azurerm_private_dns_zone_virtual_network_link" "link" {
-  name                  = "storage-link"
+resource "azurerm_private_dns_zone_virtual_network_link" "azure_link" {
+  name                  = "azure-link"
   resource_group_name   = azurerm_resource_group.networks.name
   private_dns_zone_name = azurerm_private_dns_zone.dns_zone.name
   virtual_network_id    = azurerm_virtual_network.azure.id
+}
+
+resource "azurerm_private_dns_zone_virtual_network_link" "onprem_link" {
+  name                  = "onprem-link"
+  resource_group_name   = azurerm_resource_group.networks.name
+  private_dns_zone_name = azurerm_private_dns_zone.dns_zone.name
+  virtual_network_id    = azurerm_virtual_network.onprem.id
 }
 
 # VPN
