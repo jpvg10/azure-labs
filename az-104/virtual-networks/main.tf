@@ -153,6 +153,39 @@ resource "azurerm_storage_container" "public_container" {
   container_access_type = "container" # Anonymous user can read all blobs in the container
 }
 
+# Private endpoint
+
+resource "azurerm_private_endpoint" "endpoint" {
+  name                = "storage-endpoint"
+  location            = azurerm_resource_group.networks.location
+  resource_group_name = azurerm_resource_group.networks.name
+  subnet_id           = azurerm_subnet.azure_subnet_storage.id
+
+  private_service_connection {
+    name                           = "storage-private-service-connection"
+    private_connection_resource_id = azurerm_storage_account.storage.id
+    subresource_names              = ["blob"]
+    is_manual_connection           = false
+  }
+
+  private_dns_zone_group {
+    name                 = "storage-dns-zone-group"
+    private_dns_zone_ids = [azurerm_private_dns_zone.dns_zone.id]
+  }
+}
+
+resource "azurerm_private_dns_zone" "dns_zone" {
+  name                = "privatelink.blob.core.windows.net"
+  resource_group_name = azurerm_resource_group.networks.name
+}
+
+resource "azurerm_private_dns_zone_virtual_network_link" "link" {
+  name                  = "storage-link"
+  resource_group_name   = azurerm_resource_group.networks.name
+  private_dns_zone_name = azurerm_private_dns_zone.dns_zone.name
+  virtual_network_id    = azurerm_virtual_network.azure.id
+}
+
 # VPN
 
 resource "azurerm_subnet" "onprem_subnet_gateway" {
