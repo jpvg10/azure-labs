@@ -186,6 +186,8 @@ resource "azurerm_private_dns_zone_virtual_network_link" "azure_link" {
   virtual_network_id    = azurerm_virtual_network.azure.id
 }
 
+# "Hack" that works because the on-prem network is actually an Azure VNet
+# Real scenario would need DNS forwarding
 resource "azurerm_private_dns_zone_virtual_network_link" "onprem_link" {
   name                  = "onprem-link"
   resource_group_name   = azurerm_resource_group.networks.name
