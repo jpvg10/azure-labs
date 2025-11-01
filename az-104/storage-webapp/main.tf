@@ -103,7 +103,7 @@ resource "azurerm_linux_web_app" "lab_webapp" {
     always_on = false # Required for F1 app service plan
 
     application_stack {
-      node_version = "20-lts"
+      node_version = "22-lts"
     }
   }
 
